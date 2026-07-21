@@ -1,0 +1,21 @@
+# ---------- Etapa 1: compilar el proyecto ----------
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . ./
+RUN dotnet publish -c Release -o /app/publish
+
+# ---------- Etapa 2: imagen final, más liviana ----------
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Render asigna el puerto real en la variable de entorno PORT.
+# Kestrel debe escuchar ahí, no en un puerto fijo.
+ENV ASPNETCORE_URLS=http://+:10000
+EXPOSE 10000
+
+ENTRYPOINT ["dotnet", "JLTecnico.Auth.dll"]

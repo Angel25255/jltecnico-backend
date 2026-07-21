@@ -1,0 +1,10 @@
+﻿namespace JLTecnico.Auth.DTOs
+{
+    public class CategoriaItem
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+        public bool Activo { get; set; }
+    }
+    }
