@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:3000",
-                "https://sistema-frontend-gold.vercel.app"
+                "https://jltecnico-frontend.vercel.app"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
