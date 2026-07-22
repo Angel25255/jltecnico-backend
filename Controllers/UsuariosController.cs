@@ -10,7 +10,7 @@ namespace JLTecnico.Auth.Controllers;
 
 [ApiController]
 [Route("api/usuarios")]
-//[Authorize(Roles = "Administrador")]
+[Authorize(Roles = "Administrador")]
 public class UsuariosController : ControllerBase
 {
     private readonly AppDbContext _db;
