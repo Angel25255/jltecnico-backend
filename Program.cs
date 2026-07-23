@@ -24,6 +24,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<PermisosService>();
 builder.Services.AddHttpClient<ConsultaDocumentoService>();
+builder.Services.AddHttpClient<ConsultaTelefonoService>();
 builder.Services.AddScoped<BoletaPdfService>();
 builder.Services.AddScoped<CotizacionPdfService>();
 builder.Services.AddScoped<ReportePdfService>();

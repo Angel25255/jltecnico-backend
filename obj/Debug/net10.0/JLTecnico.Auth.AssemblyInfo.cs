@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JLTecnico.Auth")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e19d97f68b8e793a853e0157098d017fe3bfacc8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+96a17bbd86b237b979e2658568e5df88aa3763f1")]
 [assembly: System.Reflection.AssemblyProductAttribute("JLTecnico.Auth")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JLTecnico.Auth")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
