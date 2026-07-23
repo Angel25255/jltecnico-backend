@@ -75,7 +75,12 @@ public class ConsultaTelefonoService
             return new TelefonoValidoResultado
             {
                 Valido = valeLaPena,
-                Operador = operador,
+                // OJO: el nombre del operador (Claro/Movistar/Bitel/Entel) que
+                // devuelve esta API NO es confiable para Perú - por la
+                // portabilidad numérica, suele adivinar mal. Por eso ya NO
+                // se usa para decidir nada, solo queda el campo "Tipo"
+                // (móvil/fijo), que sí es más estable.
+                Operador = null,
                 Tipo = tipo,
                 Mensaje = valeLaPena
                     ? "Este número existe y está activo."
