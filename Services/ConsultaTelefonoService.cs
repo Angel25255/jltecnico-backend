@@ -45,16 +45,39 @@ public class ConsultaTelefonoService
             using var documento = JsonDocument.Parse(contenido);
             var raiz = documento.RootElement;
 
-            bool valido = raiz.TryGetProperty("valid", out var elementoValido) && elementoValido.GetBoolean();
-            string? operador = raiz.TryGetProperty("carrier", out var elementoCarrier) ? elementoCarrier.GetString() : null;
-            string? tipo = raiz.TryGetProperty("type", out var elementoTipo) ? elementoTipo.GetString() : null;
+            // La respuesta real de AbstractAPI anida los datos así:
+            // { "phone_validation": { "is_valid": true, "line_status": "active" },
+            //   "phone_carrier": { "name": "Claro", "line_type": "mobile" }, ... }
+            bool valido = false;
+            string? lineStatus = null;
+            if (raiz.TryGetProperty("phone_validation", out var validacion))
+            {
+                if (validacion.TryGetProperty("is_valid", out var elementoValido) && elementoValido.ValueKind == JsonValueKind.True)
+                    valido = true;
+                if (validacion.TryGetProperty("line_status", out var elementoEstadoLinea))
+                    lineStatus = elementoEstadoLinea.GetString();
+            }
+
+            string? operador = null;
+            string? tipo = null;
+            if (raiz.TryGetProperty("phone_carrier", out var operadorInfo))
+            {
+                if (operadorInfo.TryGetProperty("name", out var elementoNombre))
+                    operador = elementoNombre.GetString();
+                if (operadorInfo.TryGetProperty("line_type", out var elementoTipoLinea))
+                    tipo = elementoTipoLinea.GetString();
+            }
+
+            // Se considera realmente válido si is_valid=true Y la línea está activa
+            // (si el operador no informa el estado, nos quedamos con is_valid solo)
+            bool valeLaPena = valido && (lineStatus == null || lineStatus == "active");
 
             return new TelefonoValidoResultado
             {
-                Valido = valido,
+                Valido = valeLaPena,
                 Operador = operador,
                 Tipo = tipo,
-                Mensaje = valido
+                Mensaje = valeLaPena
                     ? "Este número existe y está activo."
                     : "Este número no parece ser real (no se encontró en ningún operador)."
             };
