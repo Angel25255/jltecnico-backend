@@ -39,7 +39,7 @@ public class TecnicosController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<PerfilTecnicoItem>>> Listar()
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "OS_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "TECNICOS_VER"))
             return Forbid();
 
         var tecnicos = await _db.Usuarios.Where(u => u.Rol == "Tecnico").ToListAsync();

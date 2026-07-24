@@ -32,7 +32,7 @@ public class InventarioController : ControllerBase
     [HttpGet("resumen-productos")]
     public async Task<ActionResult<List<ResumenProductoInventarioItem>>> ResumenPorProducto()
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "KARDEX_VER"))
             return Forbid();
 
         var productos = await _db.Productos
@@ -83,7 +83,7 @@ public class InventarioController : ControllerBase
     [HttpGet("kardex/{productoId}")]
     public async Task<ActionResult<List<MovimientoKardexItem>>> KardexDeProducto(int productoId)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "KARDEX_VER"))
             return Forbid();
 
         var entradas = await _db.CompraDetalles

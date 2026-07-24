@@ -36,7 +36,7 @@ public class ProductosController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ProductoItem>>> Listar([FromQuery] string? busqueda)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PRODUCTOS_VER"))
             return Forbid();
 
         var query = _db.Productos.Include(p => p.Categoria).AsQueryable();
@@ -71,7 +71,7 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductoItem>> Crear(CrearEditarProductoRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PRODUCTOS_GESTIONAR"))
             return Forbid();
 
         var producto = new Producto
@@ -109,7 +109,7 @@ public class ProductosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Editar(int id, CrearEditarProductoRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PRODUCTOS_GESTIONAR"))
             return Forbid();
 
         var producto = await _db.Productos.FindAsync(id);
@@ -130,7 +130,7 @@ public class ProductosController : ControllerBase
     [HttpPatch("{id}/estado")]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] bool activo)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PRODUCTOS_GESTIONAR"))
             return Forbid();
 
         var producto = await _db.Productos.FindAsync(id);

@@ -36,7 +36,7 @@ public class ComprasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CompraItem>> Crear(CrearCompraRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_GESTIONAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "COMPRAS_GESTIONAR"))
             return Forbid();
 
         if (request.Items == null || request.Items.Count == 0)
@@ -111,7 +111,7 @@ public class ComprasController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<CompraItem>>> Listar([FromQuery] int limite = 50)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "COMPRAS_VER"))
             return Forbid();
 
         var compras = await _db.Compras

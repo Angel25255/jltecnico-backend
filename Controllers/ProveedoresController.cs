@@ -30,7 +30,7 @@ public class ProveedoresController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ProveedorItem>>> Listar([FromQuery] string? busqueda)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PROVEEDORES_VER"))
             return Forbid();
 
         var query = _db.Proveedores.AsQueryable();
@@ -64,7 +64,7 @@ public class ProveedoresController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProveedorItem>> Crear(CrearProveedorRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_GESTIONAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PROVEEDORES_GESTIONAR"))
             return Forbid();
 
         bool existe = await _db.Proveedores.AnyAsync(p => p.Ruc == request.Ruc);
@@ -106,7 +106,7 @@ public class ProveedoresController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Editar(int id, EditarProveedorRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_GESTIONAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PROVEEDORES_GESTIONAR"))
             return Forbid();
 
         var proveedor = await _db.Proveedores.FindAsync(id);
@@ -125,7 +125,7 @@ public class ProveedoresController : ControllerBase
     [HttpPatch("{id}/estado")]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] bool activo)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "INVENTARIO_GESTIONAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "PROVEEDORES_GESTIONAR"))
             return Forbid();
 
         var proveedor = await _db.Proveedores.FindAsync(id);

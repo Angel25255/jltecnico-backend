@@ -100,52 +100,76 @@ var app = builder.Build();
 
 // -----------------------------------------------------------
 // Siembra automática del catálogo de Permisos (y los valores por
-// defecto de Vendedor/Técnico) - SOLO si la tabla está vacía.
-// Así funciona igual la primera vez sin importar si la base de
-// datos es SQL Server o PostgreSQL, sin depender de scripts SQL
-// escritos a mano para un motor específico.
+// defecto de Vendedor/Técnico). A diferencia de antes, ahora
+// revisa PERMISO POR PERMISO (no la tabla completa) - así, si ya
+// tenías permisos configurados en producción, esto solo AGREGA
+// los que falten, sin tocar ni pisar los que ya existen.
 // -----------------------------------------------------------
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!db.Permisos.Any())
+    var catalogoCompleto = new List<(string Clave, string Modulo, string Descripcion, bool DefaultVendedor, bool DefaultTecnico)>
     {
-        var permisos = new List<JLTecnico.Auth.Models.Permiso>
+        ("CLIENTES_VER", "Clientes", "Ver el listado de clientes", true, false),
+        ("CLIENTES_GESTIONAR", "Clientes", "Crear y editar clientes", true, false),
+        ("PRODUCTOS_VER", "Productos", "Ver el catálogo de productos", true, false),
+        ("PRODUCTOS_GESTIONAR", "Productos", "Crear y editar productos", true, false),
+        ("CATEGORIAS_VER", "Categorias", "Ver las categorías de productos", true, false),
+        ("CATEGORIAS_GESTIONAR", "Categorias", "Crear y editar categorías", true, false),
+        ("VENTAS_VER", "Ventas", "Ver el historial de ventas", true, false),
+        ("VENTAS_CREAR", "Ventas", "Registrar nuevas ventas", true, false),
+        ("COTIZACIONES_VER", "Cotizaciones", "Ver cotizaciones", true, false),
+        ("COTIZACIONES_CREAR", "Cotizaciones", "Generar nuevas cotizaciones", true, false),
+        ("REPORTES_VER", "Reportes", "Ver reportes comerciales", true, false),
+        ("PROVEEDORES_VER", "Proveedores", "Ver el listado de proveedores", false, true),
+        ("PROVEEDORES_GESTIONAR", "Proveedores", "Crear y editar proveedores", false, false),
+        ("COMPRAS_VER", "Compras", "Ver el historial de compras", false, true),
+        ("COMPRAS_GESTIONAR", "Compras", "Registrar nuevas compras", false, false),
+        ("KARDEX_VER", "Kardex", "Ver el kardex e historial de movimientos", false, true),
+        ("TECNICOS_VER", "GestionTecnicos", "Ver la gestión de técnicos", false, true),
+        ("OS_VER", "OrdenesServicio", "Ver las órdenes de servicio", false, true),
+        ("OS_GESTIONAR", "OrdenesServicio", "Crear y asignar órdenes de servicio", false, false),
+        ("OS_ACTUALIZAR_CAMPO", "OrdenesServicio", "Actualizar el avance desde campo (técnico)", false, true),
+        // Se dejan por compatibilidad con instalaciones viejas, aunque ya
+        // no se usan directamente (Productos/Categorías/Proveedores/Compras/
+        // Kardex/Técnicos ahora tienen su propio permiso separado arriba).
+        ("INVENTARIO_VER", "Inventario", "Ver el stock del inventario (heredado)", false, false),
+        ("INVENTARIO_GESTIONAR", "Inventario", "Registrar entradas, salidas y ajustes (heredado)", false, false),
+    };
+
+    var clavesExistentes = db.Permisos.Select(p => p.Clave).ToHashSet();
+    var permisosNuevos = new List<JLTecnico.Auth.Models.Permiso>();
+
+    foreach (var (clave, modulo, descripcion, _, _) in catalogoCompleto)
+    {
+        if (!clavesExistentes.Contains(clave))
         {
-            new() { Clave = "CLIENTES_VER", Modulo = "Clientes", Descripcion = "Ver el listado de clientes" },
-            new() { Clave = "CLIENTES_GESTIONAR", Modulo = "Clientes", Descripcion = "Crear y editar clientes" },
-            new() { Clave = "VENTAS_VER", Modulo = "Ventas", Descripcion = "Ver el historial de ventas" },
-            new() { Clave = "VENTAS_CREAR", Modulo = "Ventas", Descripcion = "Registrar nuevas ventas" },
-            new() { Clave = "COTIZACIONES_VER", Modulo = "Cotizaciones", Descripcion = "Ver cotizaciones" },
-            new() { Clave = "COTIZACIONES_CREAR", Modulo = "Cotizaciones", Descripcion = "Generar nuevas cotizaciones" },
-            new() { Clave = "REPORTES_VER", Modulo = "Reportes", Descripcion = "Ver reportes comerciales" },
-            new() { Clave = "INVENTARIO_VER", Modulo = "Inventario", Descripcion = "Ver el stock del inventario" },
-            new() { Clave = "INVENTARIO_GESTIONAR", Modulo = "Inventario", Descripcion = "Registrar entradas, salidas y ajustes" },
-            new() { Clave = "OS_VER", Modulo = "OrdenesServicio", Descripcion = "Ver las órdenes de servicio" },
-            new() { Clave = "OS_GESTIONAR", Modulo = "OrdenesServicio", Descripcion = "Crear y asignar órdenes de servicio" },
-            new() { Clave = "OS_ACTUALIZAR_CAMPO", Modulo = "OrdenesServicio", Descripcion = "Actualizar el avance desde campo (técnico)" },
-        };
+            var nuevo = new JLTecnico.Auth.Models.Permiso { Clave = clave, Modulo = modulo, Descripcion = descripcion };
+            db.Permisos.Add(nuevo);
+            permisosNuevos.Add(nuevo);
+        }
+    }
 
-        db.Permisos.AddRange(permisos);
-        db.SaveChanges();
+    if (permisosNuevos.Any())
+    {
+        db.SaveChanges(); // para que los permisos nuevos ya tengan Id
 
-        string[] clavesVendedor = { "CLIENTES_VER", "CLIENTES_GESTIONAR", "VENTAS_VER", "VENTAS_CREAR", "COTIZACIONES_VER", "COTIZACIONES_CREAR", "REPORTES_VER" };
-        string[] clavesTecnico = { "OS_VER", "OS_ACTUALIZAR_CAMPO", "INVENTARIO_VER" };
-
-        foreach (var permiso in permisos)
+        foreach (var permiso in permisosNuevos)
         {
+            var infoCatalogo = catalogoCompleto.First(c => c.Clave == permiso.Clave);
+
             db.RolPermisos.Add(new JLTecnico.Auth.Models.RolPermiso
             {
                 Rol = "Vendedor",
                 PermisoId = permiso.Id,
-                Permitido = clavesVendedor.Contains(permiso.Clave)
+                Permitido = infoCatalogo.DefaultVendedor
             });
             db.RolPermisos.Add(new JLTecnico.Auth.Models.RolPermiso
             {
                 Rol = "Tecnico",
                 PermisoId = permiso.Id,
-                Permitido = clavesTecnico.Contains(permiso.Clave)
+                Permitido = infoCatalogo.DefaultTecnico
             });
         }
 

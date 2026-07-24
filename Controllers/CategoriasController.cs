@@ -28,7 +28,7 @@ public class CategoriasController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<CategoriaItem>>> Listar()
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_VER"))
+        if (!await _permisosService.TienePermiso(RolActual(), "CATEGORIAS_VER"))
             return Forbid();
 
         var categorias = await _db.Categorias
@@ -42,7 +42,7 @@ public class CategoriasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoriaItem>> Crear(CrearEditarCategoriaRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "CATEGORIAS_GESTIONAR"))
             return Forbid();
 
         bool existe = await _db.Categorias.AnyAsync(c => c.Nombre == request.Nombre);
@@ -58,7 +58,7 @@ public class CategoriasController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Editar(int id, CrearEditarCategoriaRequest request)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "CATEGORIAS_GESTIONAR"))
             return Forbid();
 
         var categoria = await _db.Categorias.FindAsync(id);
@@ -74,7 +74,7 @@ public class CategoriasController : ControllerBase
     [HttpPatch("{id}/estado")]
     public async Task<IActionResult> CambiarEstado(int id, [FromBody] bool activo)
     {
-        if (!await _permisosService.TienePermiso(RolActual(), "VENTAS_CREAR"))
+        if (!await _permisosService.TienePermiso(RolActual(), "CATEGORIAS_GESTIONAR"))
             return Forbid();
 
         var categoria = await _db.Categorias.FindAsync(id);
